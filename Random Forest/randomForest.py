@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 from sklearn import metrics
+from imblearn.over_sampling import SMOTE
 
 # Carica il dataset da un file CSV
 df = pd.read_csv("dataset.csv")
@@ -20,9 +21,12 @@ targetMapped = target.map(mapTarget)
 # Divide il dataset in set di addestramento e test
 X_train, X_test, y_train, y_test = train_test_split(features, targetMapped, test_size=0.3, random_state=0, stratify=targetMapped)
 
+smote = SMOTE(random_state=0)
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+
 # Addestra il classificatore Random Forest
 rf = RandomForestClassifier(n_estimators=100, random_state=0, class_weight='balanced')
-rf.fit(X_train, y_train)
+rf.fit(X_train_smote, y_train_smote)
 
 # Effettua previsioni sul set di test
 predictions = rf.predict(X_test)

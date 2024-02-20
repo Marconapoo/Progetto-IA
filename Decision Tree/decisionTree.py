@@ -8,6 +8,7 @@ from IPython.display import Image
 import numpy as np
 from sklearn import metrics
 import matplotlib.pyplot as plt
+from imblearn.over_sampling import SMOTE
 
 # Importa il dataset da un file CSV
 datasetPath = "dataset.csv"
@@ -25,9 +26,12 @@ targetMapped = target.map(mapTarget)
 # Divide il dataset in set di addestramento e test
 X_train, X_test, y_train, y_test = train_test_split(features, targetMapped, random_state=0)
 
+smote = SMOTE(random_state=0)
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+
 # Addestra il classificatore ad albero di decisione
 dtree = DecisionTreeClassifier(random_state=0, class_weight="balanced")
-dtree.fit(X_train, y_train)
+dtree.fit(X_train_smote, y_train_smote)
 
 # Effettua previsioni sul set di test
 predictions = dtree.predict(X_test)
@@ -52,6 +56,7 @@ f1 = metrics.f1_score(y_test, predictions)
 print(f"Accuracy: {accuracy:.2f}")
 print(f"Precision: {precision:.2f}")
 print(f"Recall: {recall:.2f}")
+print(f"F1 Score: {f1:.2f}")
 
 # Calcola la matrice di confusione
 cm = confusion_matrix(y_test, predictions)

@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 from sklearn.utils import class_weight
+from imblearn.over_sampling import SMOTE
 
 
 # Carica il dataset da un file CSV
@@ -29,19 +30,24 @@ targetMapped = target.map(mapTarget)
 # Divide il dataset in set di addestramento e di test
 X_train, X_test, y_train, y_test = train_test_split(features, targetMapped, random_state=42)
 
+# Applica SMOTE
+smote = SMOTE(random_state=42)
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+
 # Inizializza lo StandardScaler per normalizzare le caratteristiche
 scaler = StandardScaler()
 # Applica la normalizzazione al set di addestramento e di test
-X_train_scaled = scaler.fit_transform(X_train.select_dtypes(include=[np.number]))
-X_test_scaled = scaler.transform(X_test.select_dtypes(include=[np.number]))
+X_train_scaled = scaler.fit_transform(X_train_smote)
+X_test_scaled = scaler.transform(X_test)
 
 class_weights = class_weight.compute_class_weight(
     'balanced',
     classes=np.unique(y_train),
-    y=y_train
+    y=y_train_smote
 )
 
 class_weights_dict = dict(enumerate(class_weights))
+
 
 # Definisce il modello di rete neurale sequenziale
 model = Sequential([
@@ -56,7 +62,7 @@ model.compile(optimizer='adam',
               metrics=['accuracy', Precision(), Recall()])
 
 # Addestra il modello sui dati normalizzati
-history = model.fit(X_train_scaled, y_train, epochs=8, validation_split=0.2, class_weight = class_weights_dict)
+history = model.fit(X_train_scaled, y_train_smote, epochs=8, validation_split=0.2, class_weight = class_weights_dict)
 
 # Prevede le probabilità di appartenenza alla classe per il set di test
 y_pred_probs = model.predict(X_test_scaled)

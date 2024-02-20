@@ -4,10 +4,13 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.metrics import Precision, Recall
 from tensorflow.keras.layers import Dense
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 from sklearn import metrics
+from sklearn.utils import class_weight
+
 
 # Carica il dataset da un file CSV
 datasetPath = "dataset.csv"
@@ -32,6 +35,14 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train.select_dtypes(include=[np.number]))
 X_test_scaled = scaler.transform(X_test.select_dtypes(include=[np.number]))
 
+class_weights = class_weight.compute_class_weight(
+    'balanced',
+    classes=np.unique(y_train),
+    y=y_train
+)
+
+class_weights_dict = dict(enumerate(class_weights))
+
 # Definisce il modello di rete neurale sequenziale
 model = Sequential([
     Dense(64, activation='relu', input_shape=(7,)),  # Primo strato con funzione di attivazione ReLU
@@ -42,10 +53,10 @@ model = Sequential([
 # Compila il modello specificando ottimizzatore, funzione di perdita e metriche
 model.compile(optimizer='adam',
               loss='binary_crossentropy',  # Funzione di perdita per la classificazione binaria
-              metrics=['accuracy'])
+              metrics=['accuracy', Precision(), Recall()])
 
 # Addestra il modello sui dati normalizzati
-history = model.fit(X_train_scaled, y_train, epochs=8, validation_split=0.2)
+history = model.fit(X_train_scaled, y_train, epochs=8, validation_split=0.2, class_weight = class_weights_dict)
 
 # Prevede le probabilità di appartenenza alla classe per il set di test
 y_pred_probs = model.predict(X_test_scaled)
@@ -63,8 +74,10 @@ plt.title('Matrice di Confusione')
 plt.show()
 
 # Valuta il modello sul set di test per ottenere perdita e accuratezza
-loss, accuracy = model.evaluate(X_test_scaled, y_test)
+loss, accuracy, precision, recall = model.evaluate(X_test_scaled, y_test)
 print(f'Test set accuracy: {accuracy * 100:.2f}%')
+print(f"Precision: {precision:.4f}")
+print(f"Recall: {recall:.4f}")
 
 # Estrae i dati di accuratezza e perdita dall'addestramento per visualizzarli
 acc = history.history['accuracy']

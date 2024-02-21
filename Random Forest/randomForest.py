@@ -25,7 +25,7 @@ smote = SMOTE(random_state=0)
 X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
 
 # Addestra il classificatore Random Forest
-rf = RandomForestClassifier(n_estimators=100, random_state=0, class_weight='balanced')
+rf = RandomForestClassifier(n_estimators=500, random_state=0, class_weight='balanced')
 rf.fit(X_train_smote, y_train_smote)
 
 # Effettua previsioni sul set di test

@@ -81,9 +81,12 @@ plt.show()
 
 # Valuta il modello sul set di test per ottenere perdita e accuratezza
 loss, accuracy, precision, recall = model.evaluate(X_test_scaled, y_test)
+f1_score = 2 * (precision * recall) / (precision + recall)
+
 print(f'Test set accuracy: {accuracy * 100:.2f}%')
 print(f"Precision: {precision:.4f}")
 print(f"Recall: {recall:.4f}")
+print(f"F1 Score: {f1_score:.4f}")
 
 # Estrae i dati di accuratezza e perdita dall'addestramento per visualizzarli
 acc = history.history['accuracy']

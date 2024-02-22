@@ -5,12 +5,14 @@ from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.metrics import Precision, Recall
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 from sklearn.utils import class_weight
 from imblearn.over_sampling import SMOTE
+from sklearn.metrics import precision_recall_curve
 
 
 # Carica il dataset da un file CSV
@@ -55,6 +57,7 @@ model = Sequential([
     Dense(64, activation='relu'),  # Secondo strato nascosto con funzione di attivazione ReLU
     Dense(1, activation='sigmoid')  # Strato di output con funzione di attivazione sigmoide per classificazione binaria
 ])
+
 
 # Compila il modello specificando ottimizzatore, funzione di perdita e metriche
 model.compile(optimizer='adam',
